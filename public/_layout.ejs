@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<%
+
+(function(){
+  env.push(environment);
+  if (current.path[0] == 'test') env.push('test');
+
+  var _dataFile = /\.json$/;
+  var jsFile = /\.(coffee|js)$/;
+  var cssFile = /\.(less|styl|css)$/;
+
+  //given 'foo/bar/baz' return public[foo][bar][baz]
+  function resourceFor(path){
+    var resource;
+    var parts = path.split('/');
+    for (var i in parts){
+      resource = (resource || public)[parts[i]];
+    }
+    return resource;
+  }
+
+  //get the _data.jason for the dir, go through files lists found in
+  //files prop, and development.files or production.files, etc ...
+  function includeDir(path){
+    var r = resourceFor(path)._data;
+    var files = r.files || [];
+    for (var i in files){
+      includeFileWithPath(files[i], path);
+    }
+    for(var e in env){
+      files = (r[env[e]] && r[env[e]].files) || [];
+      for (var i in files){
+        includeFileWithPath(files[i], path);
+      }
+    }
+  }
+
+  //call include file removing leading 'public/' from path if appropriate
+  function includeFileWithPath(file, path){
+    if(/^http:/.test(file)){
+      includeFile(file);
+    } else {
+      includeFile((path + '/' + file).replace(/^public/,''));
+    }
+  }
+
+  //include something that might be a css/js/directory resource.
+  function includeFile(file){
+    if (jsFile.test(file)){
+      jsFiles.push(file.replace(jsFile, '.js'));
+    } else if (cssFile.test(file)){
+      cssFiles.push(file.replace(cssFile, '.css'));
+    } else if (_dataFile.test(file)){
+      includeDir(file.replace('/_data.json',''));
+    } else { //is a directory
+      includeDir(file);
+    }
+  }
+
+  //kick it off by including public css and js
+  includeFile('public/css');
+  includeFile('public/js');
+})();
+%>
+<head>
+  <title>Application</title>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+  <% for (var i=0; i < cssFiles.length; i++) { %>
+  <link rel="stylesheet" href="<%= cssFiles[i] %>">
+  <% } %>
+</head>
+
+<body>
+
+<%- yield %>
+
+<% for (var i=0; i < jsFiles.length; i++) { %>
+  <script type="text/javascript" src="<%= jsFiles[i] %>"></script>
+<% } %>
+</body>
+</html>
