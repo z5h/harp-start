@@ -2,6 +2,8 @@
 
 Template for a [Harp](https://github.com/sintaxi/harp/) project.
 
+Shows how to implement an include-directive-ish way of managing assets.
+
 ## License
 
 Copyright (C) 2013 Mark Bolusmjak
