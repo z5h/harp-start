@@ -16,17 +16,18 @@
   //if we are rendering something from /test/ add test to the env
   if (current.path[0] == 'test') env.push('test');
 
-  //regexs to help recognize and manipulate files 
-  var _dataFile = /\.json$/;
+  //regexes to help recognize and manipulate files
+  var _dataFile = /_data\.json$/;
   var jsFile = /\.(coffee|js)$/;
   var cssFile = /\.(less|styl|css)$/;
+  var httpFile = /^https?:\/\//;
 
   //given a path 'foo/bar/baz' iteratively look up properties: public[foo][bar][baz]
-  //usefull because _data.json data made available as public.path.to._data
+  //useful because _data.json data made available as public.path.to._data
   function resourceFor(path){
-    var resource;
+    var resource = null;
     var parts = path.split('/');
-    for (var i in parts){
+    for (var i = 0; i < parts.length; i++){
       resource = (resource || public)[parts[i]];
     }
     return resource;
@@ -37,12 +38,12 @@
   function includeDir(path){
     var r = resourceFor(path)._data;
     var files = r.files || [];
-    for (var i in files){
+    for (var i =0; i < files.length; i++){
       includeFileWithPath(files[i], path);
     }
-    for(var e in env){
-      files = (r[env[e]] && r[env[e]].files) || [];
-      for (var i in files){
+    for(var j =0; j < env.length; j++){
+      files = (r[env[j]] && r[env[j]].files) || [];
+      for (var i =0; i < files.length; i++){
         includeFileWithPath(files[i], path);
       }
     }
@@ -51,8 +52,8 @@
   //if the included file isn't local, don't alter it.
   //if it's in public, strip the public prefix and prepend the path
   function includeFileWithPath(file, path){
-    if(/^http:/.test(file)){
-      includeFile(file);
+    if(httpFile.test(file)){
+      includeFile(file.replace(httpFile, '//'));
     } else {
       includeFile((path + '/' + file).replace(/^public/,''));
     }
@@ -80,16 +81,16 @@
 <head>
   <title>Application</title>
   <meta http-equiv="content-type" content="text/html;charset=utf-8" />
-  <% for (var i in cssFiles) { -%>
+  <% for (var i = 0; i < cssFiles.length; i++) { -%>
     <link rel="stylesheet" href="<%= cssFiles[i] %>">
   <% } -%>
 </head>
 
 <body>
-<%- yield -%>
+<%- yield %>
 
-<% for (var i in jsFiles) { -%>
+<% for (var i =0; i < jsFiles.length; i++) { -%>
   <script type="text/javascript" src="<%= jsFiles[i] %>"></script>
-<% } -%>
+<% } %>
 </body>
 </html>
