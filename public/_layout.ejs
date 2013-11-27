@@ -1,17 +1,25 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<%
 
+<%
 (function(){
+  //env is declared in as an empty array in our harp.json
+  //we will put 'environments' into it that tell us what 
+  //we are rendering a page for. e.g. production/development/test/mobile etc
   env.push(environment);
+
+  //current is available to a template and contains 'path' and 'source' properties
+  //if we are rendering something from /test/ add test to the env
   if (current.path[0] == 'test') env.push('test');
 
+  //regexs to help recognize and manipulate files 
   var _dataFile = /\.json$/;
   var jsFile = /\.(coffee|js)$/;
   var cssFile = /\.(less|styl|css)$/;
 
-  //given 'foo/bar/baz' return public[foo][bar][baz]
+  //given a path 'foo/bar/baz' iteratively look up properties: public[foo][bar][baz]
+  //usefull because _data.json data made available as public.path.to._data
   function resourceFor(path){
     var resource;
     var parts = path.split('/');
@@ -21,8 +29,8 @@
     return resource;
   }
 
-  //get the _data.jason for the dir, go through files lists found in
-  //files prop, and development.files or production.files, etc ...
+  //get the _data.jason for the given dir, 
+  //included files listed under env values we are interested in
   function includeDir(path){
     var r = resourceFor(path)._data;
     var files = r.files || [];
@@ -37,7 +45,8 @@
     }
   }
 
-  //call include file removing leading 'public/' from path if appropriate
+  //if the included file isn't local, don't alter it.
+  //if it's in public, strip the public prefix and prepend the path
   function includeFileWithPath(file, path){
     if(/^http:/.test(file)){
       includeFile(file);
@@ -64,20 +73,20 @@
   includeFile('public/js');
 })();
 %>
+
 <head>
   <title>Application</title>
   <meta http-equiv="content-type" content="text/html;charset=utf-8" />
-  <% for (var i=0; i < cssFiles.length; i++) { %>
-  <link rel="stylesheet" href="<%= cssFiles[i] %>">
-  <% } %>
+  <% for (var i in cssFiles) { -%>
+    <link rel="stylesheet" href="<%= cssFiles[i] %>">
+  <% } -%>
 </head>
 
 <body>
+<%- yield -%>
 
-<%- yield %>
-
-<% for (var i=0; i < jsFiles.length; i++) { %>
+<% for (var i in jsFiles) { -%>
   <script type="text/javascript" src="<%= jsFiles[i] %>"></script>
-<% } %>
+<% } -%>
 </body>
 </html>
