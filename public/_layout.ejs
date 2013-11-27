@@ -3,6 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <%
+//all of the following is to recurse _data.json files that include js,css, and other _data.json 
+//and add these resources to a list if they match the current 'env' settings
+//and later, render these resources into the page.
 (function(){
   //env is declared in as an empty array in our harp.json
   //we will put 'environments' into it that tell us what 
