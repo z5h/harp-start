@@ -8,12 +8,17 @@
 //and add these resources to a list if they match the current 'env' 
 //and later, render these resources into the page.
 (function(){
+
   //globals.env is declared as an empty array in our harp.json
   //we will put 'environments' into it that tell us what 
   //we are rendering e.g. production/development/test/mobile etc
   env.push(environment);
 
-  //'current' is available to a template and contains 'path' and 'source' properties
+  //also defined in globals are:
+  //cssFiles
+  //jsFiles
+
+  //'current' is available to layouts. has 'path' and 'source' properties
   //if we are rendering something from /test/ add test to the env
   if (current.path[0] == 'test') env.push('test');
 
@@ -22,6 +27,30 @@
   var jsFile = /\.(coffee|js)$/;
   var cssFile = /\.(less|styl|css)$/;
   var httpFile = /^https?:\/\//;
+
+  //include something that might be a css/js/directory resource.
+  function include(file){
+    if (jsFile.test(file)){
+      includeFile(file.replace(jsFile, '.js'), jsFiles);
+    } else if (cssFile.test(file)){
+      includeFile(file.replace(cssFile, '.css'), cssFiles);
+    } else if (_dataFile.test(file)){
+      includeDir(file.replace('/_data.json',''));
+    } else { //is a directory
+      includeDir(file);
+    }
+  }
+
+  //add file to given files
+  //if it's in public, strip the public prefix and prepend the path
+  //if the included file isn't local, don't alter it.
+  function includeFile(file, files){
+    if(httpFile.test(file)){
+      files.push(file.replace(httpFile, '//'));
+    } else {
+      files.push(file.replace(/^public/,''));
+    }
+  }
 
   //given a path 'foo/bar/baz' iteratively look up properties: 
   //public[foo][bar][baz]
@@ -35,7 +64,7 @@
     return resource;
   }
 
-  //get the _data.jason for the given dir, 
+  //get the _data.json for the given dir 
   //included files listed under env values we are interested in
   function includeDir(path){
     var r = resourceFor(path)._data;
@@ -59,29 +88,6 @@
     }
   }
 
-  //if the included file isn't local, don't alter it.
-  //if it's in public, strip the public prefix and prepend the path
-  function includeFile(file, files){
-    if(httpFile.test(file)){
-      files.push(file.replace(httpFile, '//'));
-    } else {
-      files.push(file.replace(/^public/,''));
-    }
-  }
-
-  //include something that might be a css/js/directory resource.
-  function include(file){
-    if (jsFile.test(file)){
-      includeFile(file.replace(jsFile, '.js'), jsFiles);
-    } else if (cssFile.test(file)){
-      includeFile(file.replace(cssFile, '.css'), cssFiles);
-    } else if (_dataFile.test(file)){
-      includeDir(file.replace('/_data.json',''));
-    } else { //is a directory
-      includeDir(file);
-    }
-  }
-
   //kick it off by including public css and js
   include('public/css');
   include('public/js');
@@ -102,5 +108,6 @@
 <% for (var i =0; i < jsFiles.length; i++) { -%>
   <script type="text/javascript" src="<%= jsFiles[i] %>"></script>
 <% } %>
+<!-- Stackoverflow Career invite http://bit.ly/HXy9M1 -->
 </body>
 </html>
