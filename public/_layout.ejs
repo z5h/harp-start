@@ -3,16 +3,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <%
-//all of the following is to recurse _data.json files that include js,css, and other _data.json 
-//and add these resources to a list if they match the current 'env' settings
+//all of the following is to recurse _data.json files that include 
+//js,css, and other _data.json 
+//and add these resources to a list if they match the current 'env' 
 //and later, render these resources into the page.
 (function(){
-  //env is declared in as an empty array in our harp.json
+  //globals.env is declared as an empty array in our harp.json
   //we will put 'environments' into it that tell us what 
-  //we are rendering a page for. e.g. production/development/test/mobile etc
+  //we are rendering e.g. production/development/test/mobile etc
   env.push(environment);
 
-  //current is available to a template and contains 'path' and 'source' properties
+  //'current' is available to a template and contains 'path' and 'source' properties
   //if we are rendering something from /test/ add test to the env
   if (current.path[0] == 'test') env.push('test');
 
@@ -22,7 +23,8 @@
   var cssFile = /\.(less|styl|css)$/;
   var httpFile = /^https?:\/\//;
 
-  //given a path 'foo/bar/baz' iteratively look up properties: public[foo][bar][baz]
+  //given a path 'foo/bar/baz' iteratively look up properties: 
+  //public[foo][bar][baz]
   //useful because _data.json data made available as public.path.to._data
   function resourceFor(path){
     var resource = null;
@@ -39,32 +41,40 @@
     var r = resourceFor(path)._data;
     var files = r.files || [];
     for (var i =0; i < files.length; i++){
-      includeFileWithPath(files[i], path);
+      if (httpFile.test(files[i])){
+        include(files[i]);
+      } else {
+        include(path + '/' + files[i]);
+      }
     }
     for(var j =0; j < env.length; j++){
       files = (r[env[j]] && r[env[j]].files) || [];
       for (var i =0; i < files.length; i++){
-        includeFileWithPath(files[i], path);
+        if (httpFile.test(files[i])){
+          include(files[i]);
+        } else {
+          include(path + '/' + files[i]);
+        }
       }
     }
   }
 
   //if the included file isn't local, don't alter it.
   //if it's in public, strip the public prefix and prepend the path
-  function includeFileWithPath(file, path){
+  function includeFile(file, files){
     if(httpFile.test(file)){
-      includeFile(file.replace(httpFile, '//'));
+      files.push(file.replace(httpFile, '//'));
     } else {
-      includeFile((path + '/' + file).replace(/^public/,''));
+      files.push(file.replace(/^public/,''));
     }
   }
 
   //include something that might be a css/js/directory resource.
-  function includeFile(file){
+  function include(file){
     if (jsFile.test(file)){
-      jsFiles.push(file.replace(jsFile, '.js'));
+      includeFile(file.replace(jsFile, '.js'), jsFiles);
     } else if (cssFile.test(file)){
-      cssFiles.push(file.replace(cssFile, '.css'));
+      includeFile(file.replace(cssFile, '.css'), cssFiles);
     } else if (_dataFile.test(file)){
       includeDir(file.replace('/_data.json',''));
     } else { //is a directory
@@ -73,8 +83,8 @@
   }
 
   //kick it off by including public css and js
-  includeFile('public/css');
-  includeFile('public/js');
+  include('public/css');
+  include('public/js');
 })();
 %>
 
