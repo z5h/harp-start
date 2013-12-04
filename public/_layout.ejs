@@ -3,14 +3,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <%
-//all of the following is to recurse _data.json files that include 
-//js,css, and other _data.json 
-//and add these resources to a list if they match the current 'env' 
+//all of the following is to recurse _data.json files that include
+//js,css, and other _data.json
+//and add these resources to a list if they match the current 'env'
 //and later, render these resources into the page.
 (function(){
 
   //globals.env is declared as an empty array in our harp.json
-  //we will put 'environments' into it that tell us what 
+  //we will put 'environments' into it that tell us what
   //we are rendering e.g. production/development/test/mobile etc
   env.push(environment);
 
@@ -52,7 +52,7 @@
     }
   }
 
-  //given a path 'foo/bar/baz' iteratively look up properties: 
+  //given a path 'foo/bar/baz' iteratively look up properties:
   //public[foo][bar][baz]
   //useful because _data.json data made available as public.path.to._data
   function resourceFor(path){
@@ -64,7 +64,7 @@
     return resource;
   }
 
-  //get the _data.json for the given dir 
+  //get the _data.json for the given dir
   //included files listed under env values we are interested in
   function includeDir(path){
     var r = resourceFor(path)._data;
@@ -108,6 +108,5 @@
 <% for (var i =0; i < jsFiles.length; i++) { -%>
   <script type="text/javascript" src="<%= jsFiles[i] %>"></script>
 <% } %>
-<!-- Stackoverflow Career invite http://bit.ly/HXy9M1 -->
 </body>
 </html>

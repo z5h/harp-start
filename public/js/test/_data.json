@@ -1,7 +1,6 @@
 {
   "test": {
     "files": [
-      "person_test.js"
     ]
   }
 }

@@ -1,15 +1,11 @@
 {
   "development": {
     "files": [
-      "underscore.js",
-      "http://code.jquery.com/jquery-1.10.2.js"
     ]
   },
 
   "production": {
     "files": [
-      "underscore-min.js",
-      "http://code.jquery.com/jquery-1.10.2.min.js"
     ]
   }
 }
